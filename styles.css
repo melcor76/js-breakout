@@ -1,3 +1,8 @@
-.board {
-  border: 1px solid;
+#breakout {
+  background-color: black;
+}
+
+#play-button {
+  background-color: green;
+  padding: 0.5rem 1rem;
 }

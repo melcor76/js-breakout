@@ -1,18 +1,26 @@
 const canvas = document.getElementById('breakout');
 const ctx = canvas.getContext('2d');
 
-// Calculate size of canvas from constants.
-ctx.canvas.width = COLS * BLOCK_SIZE;
-ctx.canvas.height = ROWS * BLOCK_SIZE;
+const paddle = {
+    height: 10,
+    width: 60,
+    x: 0,
+    y: 0
+}
+const ball = {
+    x: 0,
+    y: 0,
+    speed: 5,
+    radius: 10,
+    dx: 0,
+    dy: 0
+}
+const brick = {
+    rows: 3,
+    cols: 6,
+}
 
-let x;
-let y;
 let requestId;
-let dx;
-let dy;
-
-const paddleY = canvas.height - PADDLE.HEIGHT;
-let paddleX = (canvas.width - PADDLE.WIDTH) / 2;
 let rightPressed = false;
 let leftPressed = false;
 document.addEventListener("keydown", keyDownHandler, false);
@@ -27,10 +35,12 @@ function play() {
 }
 
 function init() {
-    x = canvas.width/2;
-    y = canvas.height-30;
-    dx = BALL.SPEED;
-    dy = -BALL.SPEED;
+    ball.x = canvas.width/2;
+    ball.y = canvas.height-30;
+    ball.dx = ball.speed;
+    ball.dy = -ball.speed;
+    paddle.x = canvas.width / 2;
+    paddle.y = canvas.height - paddle.height;
 }
 
 function animate() { 
@@ -39,7 +49,7 @@ function animate() {
     drawPaddle();
     detectCollission();
     update();
-    if (y - BALL.RADIUS > canvas.height) {
+    if (ball.y - ball.radius > canvas.height) {
         gameOver();
         return;
     }
@@ -48,19 +58,19 @@ function animate() {
 }
 
 function update() {
-    x += dx;
-    y += dy;
+    ball.x += ball.dx;
+    ball.y += ball.dy;
 
     if(rightPressed) {
-        paddleX += 7;
-        if (paddleX + PADDLE.WIDTH > canvas.width){
-            paddleX = canvas.width - PADDLE.WIDTH;
+        paddle.x += 7;
+        if (paddle.x + paddle.width > canvas.width){
+            paddle.x = canvas.width - paddle.width;
         }
     }
     else if(leftPressed) {
-        paddleX -= 7;
-        if (paddleX < 0){
-            paddleX = 0;
+        paddle.x -= 7;
+        if (paddle.x < 0){
+            paddle.x = 0;
         }
     }
 }
@@ -68,32 +78,32 @@ function update() {
 function drawBall() {
     ctx.beginPath();
     ctx.fillStyle = "blue";
-    ctx.arc(x, y, BALL.RADIUS, 0, Math.PI*2);
+    ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
     ctx.fill();
     ctx.closePath();
 }
 
 function drawPaddle() {
     ctx.beginPath();
-    ctx.rect(paddleX, paddleY, PADDLE.WIDTH, PADDLE.HEIGHT);
+    ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
     ctx.fillStyle = "red";
     ctx.fill();
     ctx.closePath();
 }
 
 function detectCollission() { 
-    if (x + BALL.RADIUS > canvas.width || x - BALL.RADIUS < 0) {
-      dx = -dx;
+    if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) {
+      ball.dx = -ball.dx;
     }
           
-    if (y - BALL.RADIUS < 0) {
-      dy = -dy;
+    if (ball.y - ball.radius < 0) {
+      ball.dy = -ball.dy;
     }
 
     // Paddle
-    if (y + BALL.RADIUS > canvas.height - PADDLE.HEIGHT && y + BALL.RADIUS < canvas.height) {
-        if(x > paddleX && x < paddleX + PADDLE.WIDTH) {
-            dy = -dy;
+    if (ball.y + ball.radius > canvas.height - paddle.height && ball.y + ball.radius < canvas.height) {
+        if(ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+            ball.dy = -ball.dy;
         }
     }
 }
