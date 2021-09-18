@@ -2,23 +2,44 @@ const canvas = document.getElementById('breakout');
 const ctx = canvas.getContext('2d');
 
 const paddle = {
-    height: 10,
-    width: 60,
+    height: 23,
+    width: 114,
+    speed: 15,
     x: 0,
     y: 0
 }
 const ball = {
     x: 0,
     y: 0,
-    speed: 5,
+    speed: 9,
     radius: 10,
     dx: 0,
     dy: 0
 }
 const brick = {
-    rows: 3,
-    cols: 6,
+    rows: 5,
+    cols: 8,
+    width: 90,
+    height: 30,
+    margin: 10,
 }
+
+const ballImage = new Image();
+ballImage.src = 'ball.png';
+ballImage.width = 2* ball.radius;
+ballImage.height = 2*  ball.radius;
+
+const paddleImage = new Image();
+paddleImage.src = 'paddle.png';
+paddleImage.width = paddle.width;
+paddleImage.height = paddle.height;
+
+const background = new Image();
+background.src = 'bg-space.png';
+background.width = canvas.width;
+background.height = canvas.height;
+
+let bricks = [];
 
 let requestId;
 let rightPressed = false;
@@ -41,13 +62,29 @@ function init() {
     ball.dy = -ball.speed;
     paddle.x = canvas.width / 2;
     paddle.y = canvas.height - paddle.height;
+    initBricks();
+}
+
+function initBricks() {
+    const wallMargin = 5;
+    const colors = ['red', 'blue', 'yellow', 'green', 'orange'];
+    for(let c = 0; c < brick.cols; c++) {
+        bricks[c] = [];
+        for(let r = 0; r < brick.rows; r++) {
+            let x = c * (brick.width + brick.margin) + wallMargin;
+            let y = r * (brick.height + brick.margin) + wallMargin;
+            bricks[c][r] = { x, y, color: colors[r] };
+        }
+    }
 }
 
 function animate() { 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBall();
     drawPaddle();
+    drawBricks();
     detectCollission();
+    detectBrickCollision();
     update();
     if (ball.y - ball.radius > canvas.height) {
         gameOver();
@@ -62,33 +99,53 @@ function update() {
     ball.y += ball.dy;
 
     if(rightPressed) {
-        paddle.x += 7;
+        paddle.x += paddle.speed;
         if (paddle.x + paddle.width > canvas.width){
             paddle.x = canvas.width - paddle.width;
         }
     }
     else if(leftPressed) {
-        paddle.x -= 7;
+        paddle.x -= paddle.speed;
         if (paddle.x < 0){
             paddle.x = 0;
         }
     }
 }
 
+
 function drawBall() {
-    ctx.beginPath();
-    ctx.fillStyle = "blue";
+    ctx.drawImage(background, 0, 0, background.width, background.height);
+    ctx.drawImage(ballImage, ball.x, ball.y, 2*ball.radius, 2*ball.radius);
+    ctx.fill();
+    /*ctx.beginPath();
+    ctx.fillStyle = "red";
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
     ctx.fill();
-    ctx.closePath();
+    ctx.closePath();*/
 }
 
 function drawPaddle() {
-    ctx.beginPath();
+    ctx.drawImage(paddleImage, paddle.x, paddle.y, paddle.width, paddle.height);
+    /*ctx.beginPath();
     ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
-    ctx.fillStyle = "red";
+    ctx.fillStyle = "lightblue";
     ctx.fill();
-    ctx.closePath();
+    ctx.closePath();*/
+}
+
+function drawBricks() {
+    for (let row = 0; row < brick.rows; row++) {
+        for(let col = 0; col < brick.cols; col++) {       
+            let b = bricks[col][row];
+            if (b) {            
+                ctx.beginPath();
+                ctx.fillStyle = b.color;
+                ctx.rect(b.x, b.y, brick.width, brick.height);
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
+    }
 }
 
 function detectCollission() { 
@@ -104,6 +161,19 @@ function detectCollission() {
     if (ball.y + ball.radius > canvas.height - paddle.height && ball.y + ball.radius < canvas.height) {
         if(ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
             ball.dy = -ball.dy;
+        }
+    }
+}
+
+function detectBrickCollision() {
+    for(let c=0; c<brick.cols; c++) {
+        for(let r=0; r<brick.rows; r++) {
+            let b = bricks[c][r];
+            
+            if(b && ball.x > b.x && ball.x < b.x+brick.width && ball.y > b.y && ball.y < b.y+brick.height) {
+                ball.dy = -ball.dy;
+                bricks[c][r] = null;
+            }
         }
     }
 }
