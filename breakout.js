@@ -4,18 +4,10 @@ const ctx = canvas.getContext('2d');
 const paddle = {
     height: 23,
     width: 114,
-    speed: 15,
-    x: 0,
-    y: 0
 }
 const ball = {
-    x: 0,
-    y: 0,
-    speed: 9,
-    radius: 10,
-    dx: 0,
-    dy: 0
-}
+    radius: 10
+};
 const brick = {
     rows: 5,
     cols: 8,
@@ -40,7 +32,9 @@ background.width = canvas.width;
 background.height = canvas.height;
 
 let bricks = [];
-
+let speed;
+let score;
+let level;
 let requestId;
 let rightPressed = false;
 let leftPressed = false;
@@ -48,44 +42,60 @@ document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
 
 function play() {   
-    init(); 
+    resetGame();
     if (requestId) {
         cancelAnimationFrame(requestId);
     }
     animate();
 }
 
-function init() {
+function resetGame() {
+    speed = 8;
+    score = 0;
+    level = 1;
+    resetBall();
+    initPaddle();
+    initBricks();
+}
+
+function resetBall() {
     ball.x = canvas.width/2;
     ball.y = canvas.height-30;
-    ball.dx = ball.speed;
-    ball.dy = -ball.speed;
+    ball.dx = speed; // Right
+    ball.dy = -speed; // Up
+}
+
+function initPaddle() {
     paddle.x = canvas.width / 2;
     paddle.y = canvas.height - paddle.height;
-    initBricks();
+    paddle.speed = speed + 5;
 }
 
 function initBricks() {
     const wallMargin = 5;
+    const roofMargin = 30;
     const colors = ['red', 'blue', 'yellow', 'green', 'orange'];
     for(let c = 0; c < brick.cols; c++) {
         bricks[c] = [];
         for(let r = 0; r < brick.rows; r++) {
             let x = c * (brick.width + brick.margin) + wallMargin;
-            let y = r * (brick.height + brick.margin) + wallMargin;
-            bricks[c][r] = { x, y, color: colors[r] };
+            let y = r * (brick.height + brick.margin) + roofMargin;
+            bricks[c][r] = { x, y, color: colors[r], hitsLeft: 1 };
         }
     }
 }
 
 function animate() { 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(background, 0, 0, background.width, background.height);
     drawBall();
     drawPaddle();
     drawBricks();
+    drawScore();
     detectCollission();
     detectBrickCollision();
     update();
+    checkLevel();
     if (ball.y - ball.radius > canvas.height) {
         gameOver();
         return;
@@ -112,11 +122,18 @@ function update() {
     }
 }
 
+function checkLevel() {
+    if (bricks.every(b => b.every((b) => b.hitsLeft === 0))) {
+        level++;
+        // speed++; should we increase speed?
+        initBall();
+        initBricks();
+    }
+}
 
 function drawBall() {
-    ctx.drawImage(background, 0, 0, background.width, background.height);
     ctx.drawImage(ballImage, ball.x, ball.y, 2*ball.radius, 2*ball.radius);
-    ctx.fill();
+    //ctx.fill();
     /*ctx.beginPath();
     ctx.fillStyle = "red";
     ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI*2);
@@ -137,7 +154,7 @@ function drawBricks() {
     for (let row = 0; row < brick.rows; row++) {
         for(let col = 0; col < brick.cols; col++) {       
             let b = bricks[col][row];
-            if (b) {            
+            if (b.hitsLeft) {            
                 ctx.beginPath();
                 ctx.fillStyle = b.color;
                 ctx.rect(b.x, b.y, brick.width, brick.height);
@@ -146,6 +163,12 @@ function drawBricks() {
             }
         }
     }
+}
+
+function drawScore() {
+  ctx.font = "14px Arial";
+  ctx. fillStyle = "white";
+  ctx.fillText("Level: " + level + " Score: " + score, 5, 20);
 }
 
 function detectCollission() { 
@@ -166,13 +189,14 @@ function detectCollission() {
 }
 
 function detectBrickCollision() {
-    for(let c=0; c<brick.cols; c++) {
-        for(let r=0; r<brick.rows; r++) {
+    for(let c = 0; c < brick.cols; c++) {
+        for(let r = 0; r < brick.rows; r++) {
             let b = bricks[c][r];
             
-            if(b && ball.x > b.x && ball.x < b.x+brick.width && ball.y > b.y && ball.y < b.y+brick.height) {
+            if(b.hitsLeft && ball.x > b.x && ball.x < b.x + brick.width && ball.y > b.y && ball.y < b.y + brick.height) {
                 ball.dy = -ball.dy;
-                bricks[c][r] = null;
+                b.hitsLeft--;
+                score += (5 - r) * 2;
             }
         }
     }
