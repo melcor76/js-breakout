@@ -91,16 +91,13 @@ function initBricks() {
 }
 
 function animate() { 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
-    drawBall();
-    drawPaddle();
-    drawBricks();
-    drawScore();
+    draw();
     update();
     detectCollission();
     detectBrickCollision();
     checkLevel();
+
+    // Check for lost ball
     if (ball.y - ball.radius > canvas.height) {
         game.lives -= 1;
         if (game.lives === 0) {
@@ -113,6 +110,15 @@ function animate() {
     }
 
     game.requestId = requestAnimationFrame(animate);
+}
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
+    drawBall();
+    drawPaddle();
+    drawBricks();
+    drawScore();
 }
 
 function update() {
