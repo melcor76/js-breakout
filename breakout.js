@@ -32,15 +32,15 @@ let images = {
     background: new Image()
 }
 
-images.ball.src = 'ball.png';
+images.ball.src = 'ball.webp';
 images.ball.width = 2* ball.radius;
 images.ball.height = 2*  ball.radius;
 
-images.paddle.src = 'paddle.png';
+images.paddle.src = 'paddle.webp';
 images.paddle.width = paddle.width;
 images.paddle.height = paddle.height;
 
-images.background.src = 'bg-space.png';
+images.background.src = 'bg-space.webp';
 images.background.width = canvas.width;
 images.background.height = canvas.height;
 
