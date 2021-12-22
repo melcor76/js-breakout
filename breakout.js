@@ -33,16 +33,8 @@ let images = {
 }
 
 images.ball.src = 'ball.webp';
-images.ball.width = 2* ball.radius;
-images.ball.height = 2*  ball.radius;
-
 images.paddle.src = 'paddle.webp';
-images.paddle.width = paddle.width;
-images.paddle.height = paddle.height;
-
 images.background.src = 'bg-space.webp';
-images.background.width = canvas.width;
-images.background.height = canvas.height;
 
 function play() {   
     initGame();
@@ -60,7 +52,7 @@ function initGame() {
     game.speed = 8;
     game.score = 0;
     game.level = 1;
-    game.lives = 3;
+    game.lives = 1;
 }
 
 function initBall() {
@@ -113,10 +105,16 @@ function animate() {
 }
 
 function draw() {
+    // clear canvas and draw background
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
-    drawBall();
-    drawPaddle();
+
+    // draw ball
+    ctx.drawImage(images.ball, ball.x, ball.y, 2*ball.radius, 2*ball.radius);
+
+    // draw paddle
+    ctx.drawImage(images.paddle, paddle.x, paddle.y, paddle.width, paddle.height);
+
     drawBricks();
     drawScore();
 }
@@ -145,14 +143,6 @@ function checkLevel() {
         initBall();
         initBricks();
     }
-}
-
-function drawBall() {
-    ctx.drawImage(images.ball, ball.x, ball.y, 2*ball.radius, 2*ball.radius);
-}
-
-function drawPaddle() {
-    ctx.drawImage(images.paddle, paddle.x, paddle.y, paddle.width, paddle.height);
 }
 
 function drawBricks() {
@@ -250,6 +240,7 @@ function keyUpHandler(e) {
 
 function gameOver() {
     cancelAnimationFrame(game.requestId);
-    console.log('GAME OVER');
+    ctx.font = '40px Arial';
+    ctx.fillStyle = 'red';
+    ctx.fillText('GAME OVER', canvas.width/2-100, canvas.height/2);
 }
-
