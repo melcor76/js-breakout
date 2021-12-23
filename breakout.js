@@ -1,7 +1,7 @@
 const canvas = document.getElementById('breakout');
 const ctx = canvas.getContext('2d');
-document.addEventListener("keydown", keyDownHandler, false);
-document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener('keydown', keyDownHandler, false);
+document.addEventListener('keyup', keyUpHandler, false);
 
 let game = {
     speed: 1,
@@ -21,10 +21,10 @@ let ball = {
 let brick = {
     matrix: [],
     rows: 5,
-    cols: 7,
-    width: 90,
+    cols: 10,
+    width: canvas.width/10,
     height: 30,
-    margin: 20,
+    margin: 0,
 }
 let images = {
     ball: new Image(),
@@ -52,7 +52,7 @@ function initGame() {
     game.speed = 8;
     game.score = 0;
     game.level = 1;
-    game.lives = 1;
+    game.lives = 3;
 }
 
 function initBall() {
@@ -69,9 +69,9 @@ function initPaddle() {
 }
 
 function initBricks() {
-    const wallMargin = 20;
+    const wallMargin = 0;
     const roofMargin = 30;
-    const colors = ['red', 'blue', 'yellow', 'green', 'orange'];
+    const colors = ['red', 'orange', 'yellow', 'blue', 'green'];
     for(let c = 0; c < brick.cols; c++) {
         brick.matrix[c] = [];
         for(let r = 0; r < brick.rows; r++) {
@@ -85,7 +85,7 @@ function initBricks() {
 function animate() { 
     draw();
     update();
-    detectCollission();
+    detectCollision();
     detectBrickCollision();
     checkLevel();
 
@@ -154,6 +154,7 @@ function drawBricks() {
                 ctx.fillStyle = b.color;
                 ctx.rect(b.x, b.y, brick.width, brick.height);
                 ctx.fill();
+                ctx.strokeRect(b.x, b.y, brick.width, brick.height)
                 ctx.closePath();
             }
         }
@@ -161,13 +162,13 @@ function drawBricks() {
 }
 
 function drawScore() {
-  ctx.font = "14px Arial";
-  ctx. fillStyle = "white";
+  ctx.font = '14px Arial';
+  ctx. fillStyle = 'white';
   const { level, score, lives } = game;
   ctx.fillText(`Level: ${level} Score: ${score} Lives: ${lives}`, 5, 20);
 }
 
-function detectCollission() {
+function detectCollision() {
     if (ball.x + ball.radius * 2 > canvas.width || ball.x < 0) {
       ball.dx = -ball.dx;
     }
@@ -221,19 +222,17 @@ function detectBrickCollision() {
 }
 
 function keyDownHandler(e) {
-    if(e.key === "Right" || e.key === "ArrowRight") {
+    if (e.key === 'Right' || e.key === 'ArrowRight') {
         game.rightPressed = true;
-    }
-    else if(e.key === "Left" || e.key === "ArrowLeft") {
+    } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
         game.leftPressed = true;
     }
 }
 
 function keyUpHandler(e) {
-    if(e.key === "Right" || e.key === "ArrowRight") {
+    if (e.key === 'Right' || e.key === 'ArrowRight') {
         game.rightPressed = false;
-    }
-    else if(e.key === "Left" || e.key === "ArrowLeft") {
+    } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
         game.leftPressed = false;
     }
 }
