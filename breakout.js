@@ -14,6 +14,8 @@ let game = {
 let paddle = {
     height: 23,
     width: 114,
+    x: canvas.width / 2,
+    get y() { return canvas.height - this.height; }
 }
 let ball = {
     radius: 10
@@ -22,9 +24,8 @@ let brick = {
     matrix: [],
     rows: 5,
     cols: 10,
-    width: canvas.width/10,
-    height: 30,
-    margin: 0,
+    get width() { return canvas.width / this.cols; },
+    height: 30
 }
 let images = {
     ball: new Image(),
@@ -64,19 +65,19 @@ function initBall() {
 
 function initPaddle() {
     paddle.x = canvas.width / 2;
-    paddle.y = canvas.height - paddle.height;
     paddle.speed = game.speed + 7;
 }
 
 function initBricks() {
-    const wallMargin = 0;
-    const roofMargin = 30;
+    const topMargin = 30;
     const colors = ['red', 'orange', 'yellow', 'blue', 'green'];
+
     for(let c = 0; c < brick.cols; c++) {
         brick.matrix[c] = [];
+        
         for(let r = 0; r < brick.rows; r++) {
-            let x = c * (brick.width + brick.margin) + wallMargin;
-            let y = r * (brick.height + brick.margin) + roofMargin;
+            let x = c * brick.width;
+            let y = r * brick.height + topMargin;
             brick.matrix[c][r] = { x, y, color: colors[r], hitsLeft: 1 };
         }
     }
@@ -154,7 +155,7 @@ function drawBricks() {
                 ctx.fillStyle = b.color;
                 ctx.rect(b.x, b.y, brick.width, brick.height);
                 ctx.fill();
-                ctx.strokeRect(b.x, b.y, brick.width, brick.height)
+                ctx.strokeRect(b.x, b.y, brick.width, brick.height);
                 ctx.closePath();
             }
         }
