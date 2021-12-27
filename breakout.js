@@ -1,7 +1,7 @@
 const canvas = document.getElementById('breakout');
 const ctx = canvas.getContext('2d');
-document.addEventListener('keydown', keyDownHandler, false);
-document.addEventListener('keyup', keyUpHandler, false);
+document.addEventListener('keydown', keyDownHandler);
+document.addEventListener('keyup', keyUpHandler);
 
 let game = {
     speed: 1,
@@ -74,7 +74,7 @@ function initBricks() {
 
     for(let c = 0; c < brick.cols; c++) {
         brick.matrix[c] = [];
-        
+
         for(let r = 0; r < brick.rows; r++) {
             let x = c * brick.width;
             let y = r * brick.height + topMargin;
@@ -94,7 +94,6 @@ function animate() {
     if (ball.y - ball.radius > canvas.height) {
         game.lives -= 1;
         if (game.lives === 0) {
-            drawScore()
             gameOver();
             return;
         } else {
@@ -118,6 +117,7 @@ function draw() {
 
     drawBricks();
     drawScore();
+    drawLives();
 }
 
 function update() {
@@ -163,10 +163,18 @@ function drawBricks() {
 }
 
 function drawScore() {
-  ctx.font = '14px Arial';
-  ctx. fillStyle = 'white';
-  const { level, score, lives } = game;
-  ctx.fillText(`Level: ${level} Score: ${score} Lives: ${lives}`, 5, 20);
+    ctx.font = '16px Arial';
+    ctx. fillStyle = 'white';
+    const { level, score } = game;
+    ctx.fillText(`Level: ${level}`, 5, 20);
+    ctx.fillText(`Score: ${score}`, canvas.width / 2 - 50, 20);
+}
+
+function drawLives() {
+    const { lives } = game;
+    if (lives > 2) { ctx.drawImage(images.paddle, canvas.width - 150, 10, 40, 15); }
+    if (lives > 1) { ctx.drawImage(images.paddle, canvas.width - 100, 10, 40, 15); }
+    if (lives > 0) { ctx.drawImage(images.paddle, canvas.width - 50, 10, 40, 15); }
 }
 
 function detectCollision() {
@@ -242,5 +250,5 @@ function gameOver() {
     cancelAnimationFrame(game.requestId);
     ctx.font = '40px Arial';
     ctx.fillStyle = 'red';
-    ctx.fillText('GAME OVER', canvas.width/2-100, canvas.height/2);
+    ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2);
 }
