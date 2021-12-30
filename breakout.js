@@ -21,7 +21,6 @@ let ball = {
     radius: 10
 };
 let brick = {
-    matrix: [],
     rows: 5,
     cols: 10,
     get width() { return canvas.width / this.cols; },
@@ -36,6 +35,8 @@ let images = {
 images.ball.src = 'ball.webp';
 images.paddle.src = 'paddle.webp';
 images.background.src = 'bg-space.webp';
+
+let brickField = [];
 
 function play() {   
     initGame();
@@ -57,8 +58,8 @@ function initGame() {
 }
 
 function initBall() {
-    ball.x = canvas.width/2;
-    ball.y = canvas.height-80;
+    ball.x = canvas.width / 2;
+    ball.y = canvas.height - 80;
     ball.dx = game.speed;  // Right
     ball.dy = -game.speed; // Up
 }
@@ -72,13 +73,15 @@ function initBricks() {
     const topMargin = 30;
     const colors = ['red', 'orange', 'yellow', 'blue', 'green'];
 
-    for(let c = 0; c < brick.cols; c++) {
-        brick.matrix[c] = [];
-
-        for(let r = 0; r < brick.rows; r++) {
-            let x = c * brick.width;
-            let y = r * brick.height + topMargin;
-            brick.matrix[c][r] = { x, y, color: colors[r], hitsLeft: 1 };
+    for(let r = 0; r < brick.rows; r++) {
+        for(let c = 0; c < brick.cols; c++) {
+            brickField.push({
+                x: c * brick.width,
+                y: r * brick.height + topMargin,
+                color: colors[r],
+                points: (5- r) * 2,
+                hitsLeft: r === 0 ? 2 : 1
+            });
         }
     }
 }
@@ -138,7 +141,7 @@ function update() {
 }
 
 function checkLevel() {
-    if (brick.matrix.every(b => b.every((b) => b.hitsLeft === 0))) {
+    if (brickField.every((b) => b.hitsLeft === 0)) {
         game.level++;
         // speed++; should we increase speed?
         initBall();
@@ -147,19 +150,16 @@ function checkLevel() {
 }
 
 function drawBricks() {
-    for (let row = 0; row < brick.rows; row++) {
-        for(let col = 0; col < brick.cols; col++) {       
-            let b = brick.matrix[col][row];
-            if (b.hitsLeft) {            
-                ctx.beginPath();
-                ctx.fillStyle = b.color;
-                ctx.rect(b.x, b.y, brick.width, brick.height);
-                ctx.fill();
-                ctx.strokeRect(b.x, b.y, brick.width, brick.height);
-                ctx.closePath();
-            }
+    brickField.forEach((b) => {
+        if (b.hitsLeft) {         
+            ctx.beginPath();
+            ctx.fillStyle = b.color;
+            ctx.rect(b.x, b.y, brick.width, brick.height);
+            ctx.fill();
+            ctx.strokeRect(b.x, b.y, brick.width, brick.height);
+            ctx.closePath();
         }
-    }
+    });
 }
 
 function drawScore() {
@@ -202,46 +202,42 @@ function detectCollision() {
 }
 
 function detectBrickCollision() {
-    for(let c = 0; c < brick.cols; c++) {
-        for(let r = 0; r < brick.rows; r++) {
-            let b = brick.matrix[c][r];
-            
-            if (b.hitsLeft && 
-                ball.x + ball.radius * 2 > b.x && 
-                ball.x < b.x + brick.width && 
-                ball.y + ball.radius * 2 > b.y && 
-                ball.y < b.y + brick.height) {
+    brickField.forEach((b) => {
+        if (b.hitsLeft && 
+            ball.x + ball.radius * 2 > b.x && 
+            ball.x < b.x + brick.width && 
+            ball.y + ball.radius * 2 > b.y && 
+            ball.y < b.y + brick.height) {
 
-                    // console.log(`ball x: ${ball.x} y: ${ball.y}`)
-                    // console.log(`bric x: ${b.x} y: ${b.y}`)
+                // console.log(`ball x: ${ball.x} y: ${ball.y}`)
+                // console.log(`bric x: ${b.x} y: ${b.y}`)
 
-                    if (ball.x + ball.radius <= b.x) { // Hit from left
-                        ball.dx = -ball.dx;
-                    } else if (ball.x + ball.radius >= b.x + brick.width) { // Hit from let
-                        ball.dx = -ball.dx;
-                    } else { // Hit from above or below
-                        ball.dy = -ball.dy;
-                    }
-                                      
-                    b.hitsLeft--;
-                    game.score += (5 - r) * 2;
-            }
+                if (ball.x + ball.radius <= b.x) { // Hit from left
+                    ball.dx = -ball.dx;
+                } else if (ball.x + ball.radius >= b.x + brick.width) { // Hit from let
+                    ball.dx = -ball.dx;
+                } else { // Hit from above or below
+                    ball.dy = -ball.dy;
+                }
+                                  
+                b.hitsLeft--;
+                game.score += b.points;
         }
-    }
+    });
 }
 
 function keyDownHandler(e) {
-    if (e.key === 'Right' || e.key === 'ArrowRight') {
+    if (e.key === 'ArrowRight') {
         game.rightPressed = true;
-    } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+    } else if (e.key === 'ArrowLeft') {
         game.leftPressed = true;
     }
 }
 
 function keyUpHandler(e) {
-    if (e.key === 'Right' || e.key === 'ArrowRight') {
+    if (e.key === 'ArrowRight') {
         game.rightPressed = false;
-    } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
+    } else if (e.key === 'ArrowLeft') {
         game.leftPressed = false;
     }
 }
