@@ -4,12 +4,9 @@ document.addEventListener('keydown', keyDownHandler);
 document.addEventListener('keyup', keyUpHandler);
 
 let game = {
-    speed: 1,
-    score: 0,
-    level: 1,
     requestId: null,
-    leftPressed: false,
-    rightPressed: false
+    leftKey: false,
+    rightKey: false
 }
 let paddle = {
     height: 20,
@@ -37,7 +34,7 @@ images.paddle.src = './assets/paddle.webp';
 let brickField = [];
 
 function play() {   
-    initGame();
+    resetGame();
     resetBall();
     resetPaddle();
     initBricks();
@@ -48,7 +45,7 @@ function play() {
     animate();
 }
 
-function initGame() {
+function resetGame() {
     game.speed = 8;
     game.score = 0;
     game.level = 1;
@@ -119,13 +116,13 @@ function update() {
     ball.x += ball.dx;
     ball.y += ball.dy;
 
-    if (game.rightPressed) {
+    if (game.rightKey) {
         paddle.x += paddle.dx;
         if (paddle.x + paddle.width > canvas.width){
             paddle.x = canvas.width - paddle.width;
         }
     }
-    if (game.leftPressed) {
+    if (game.leftKey) {
         paddle.x -= paddle.dx;
         if (paddle.x < 0){
             paddle.x = 0;
@@ -145,16 +142,13 @@ function checkLevel() {
 
 function drawBricks() {
     brickField.forEach((b) => {
-        if (b.hitsLeft) {         
-            ctx.beginPath();
-            ctx.fillStyle = b.color;
-            ctx.rect(b.x, b.y, brick.width, brick.height);
-            ctx.fill();
-            ctx.strokeRect(b.x, b.y, brick.width, brick.height);
-            ctx.closePath();
-        }
+      if (b.hitsLeft) {
+        ctx.fillStyle = b.color;
+        ctx.fillRect(b.x, b.y, brick.width, brick.height);
+        ctx.strokeRect(b.x, b.y, brick.width, brick.height);
+      }
     });
-}
+  }
 
 function drawScore() {
     ctx.font = '16px Arial';
@@ -200,43 +194,50 @@ function detectCollision() {
 }
 
 function detectBrickCollision() {
+    let directionChanged = false;
     brickField.forEach((b) => {
         if (b.hitsLeft && 
-            ball.x + ball.radius * 2 > b.x && 
+            ball.x + 2 * ball.radius > b.x && 
             ball.x < b.x + brick.width && 
-            ball.y + ball.radius * 2 > b.y && 
+            ball.y + 2 * ball.radius > b.y && 
             ball.y < b.y + brick.height) {
+
+                b.hitsLeft--;
+                if (b.hitsLeft === 1) {
+                    b.color = 'darkgray';
+                }
+                game.score += b.points;
 
                 // console.log(`ball x: ${ball.x} y: ${ball.y}`)
                 // console.log(`bric x: ${b.x} y: ${b.y}`)
 
-                if (ball.x + ball.radius <= b.x) { // Hit from left
-                    ball.dx = -ball.dx;
-                } else if (ball.x + ball.radius >= b.x + brick.width) { // Hit from let
-                    ball.dx = -ball.dx;
-                } else { // Hit from above or below
-                    ball.dy = -ball.dy;
+                if (!directionChanged) {
+                    directionChanged = true;
+                    if (ball.x + 2* ball.radius - ball.dx <= b.x) { // Hit from left
+                        ball.dx = -ball.dx;
+                    } else if (ball.x - ball.dx >= b.x + brick.width) { // Hit from right
+                        ball.dx = -ball.dx;
+                    } else { // Hit from above or below
+                        ball.dy = -ball.dy;
+                    }
                 }
-                                  
-                b.hitsLeft--;
-                game.score += b.points;
         }
     });
 }
 
 function keyDownHandler(e) {
     if (e.key === 'ArrowRight') {
-        game.rightPressed = true;
+        game.rightKey = true;
     } else if (e.key === 'ArrowLeft') {
-        game.leftPressed = true;
+        game.leftKey = true;
     }
 }
 
 function keyUpHandler(e) {
     if (e.key === 'ArrowRight') {
-        game.rightPressed = false;
+        game.rightKey = false;
     } else if (e.key === 'ArrowLeft') {
-        game.leftPressed = false;
+        game.leftKey = false;
     }
 }
 
