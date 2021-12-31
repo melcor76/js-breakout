@@ -26,13 +26,13 @@ let brick = {
     height: 30
 }
 let images = {
+    background: new Image(),
     ball: new Image(),
-    paddle: new Image(),
-    background: new Image()
+    paddle: new Image()
 }
-images.ball.src = 'ball.webp';
-images.paddle.src = 'paddle.webp';
-images.background.src = 'bg-space.webp';
+images.background.src = './assets/bg-space.webp';
+images.ball.src = './assets/ball.webp';
+images.paddle.src = './assets/paddle.webp';
 
 let brickField = [];
 
@@ -63,8 +63,8 @@ function resetBall() {
 }
 
 function resetPaddle() {
-    paddle.x = canvas.width / 2 - paddle.width / 2;
-    paddle.speed = game.speed + 7;
+    paddle.x = (canvas.width - paddle.width) / 2;
+    paddle.dx = game.speed + 7;
 }
 
 function initBricks() {
@@ -120,12 +120,13 @@ function update() {
     ball.y += ball.dy;
 
     if (game.rightPressed) {
-        paddle.x += paddle.speed;
+        paddle.x += paddle.dx;
         if (paddle.x + paddle.width > canvas.width){
             paddle.x = canvas.width - paddle.width;
         }
-    } else if (game.leftPressed) {
-        paddle.x -= paddle.speed;
+    }
+    if (game.leftPressed) {
+        paddle.x -= paddle.dx;
         if (paddle.x < 0){
             paddle.x = 0;
         }
@@ -191,11 +192,11 @@ function detectCollision() {
     function hitLeftWall() { return ball.x < 0 }
     function hitRightWall() { return ball.x + ball.radius * 2 > canvas.width }
     function hitPaddle() { 
-        return ball.y + ball.radius * 2 > canvas.height - paddle.height &&
+        const ballCenterX = ball.x + ball.radius;
+        return ball.y + 2 * ball.radius > canvas.height - paddle.height &&
                ball.y + ball.radius < canvas.height && 
-               ball.x > paddle.x && ball.x < paddle.x + paddle.width;
-    }
-    // TODO paddle collision needs improvement
+               ballCenterX > paddle.x && ballCenterX < paddle.x + paddle.width;
+      }
 }
 
 function detectBrickCollision() {
