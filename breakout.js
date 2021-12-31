@@ -14,7 +14,6 @@ let game = {
 let paddle = {
     height: 20,
     width: 100,
-    x: canvas.width / 2,
     get y() { return canvas.height - this.height; }
 }
 let ball = {
@@ -39,8 +38,8 @@ let brickField = [];
 
 function play() {   
     initGame();
-    initBall();
-    initPaddle();
+    resetBall();
+    resetPaddle();
     initBricks();
 
     if (game.requestId) {
@@ -56,15 +55,15 @@ function initGame() {
     game.lives = 3;
 }
 
-function initBall() {
+function resetBall() {
     ball.x = canvas.width / 2;
-    ball.y = canvas.height - 80;
-    ball.dx = game.speed;  // Right
+    ball.y = canvas.height - paddle.height - 2 * ball.radius;
+    ball.dx = game.speed * (Math.random() * 2 - 1);  // Random trajectory
     ball.dy = -game.speed; // Up
 }
 
-function initPaddle() {
-    paddle.x = canvas.width / 2;
+function resetPaddle() {
+    paddle.x = canvas.width / 2 - paddle.width / 2;
     paddle.speed = game.speed + 7;
 }
 
@@ -78,7 +77,7 @@ function initBricks() {
                 x: c * brick.width,
                 y: r * brick.height + topMargin,
                 color: colors[r],
-                points: (5- r) * 2,
+                points: (5 - r) * 2,
                 hitsLeft: r === 0 ? 2 : 1
             });
         }
@@ -99,7 +98,8 @@ function animate() {
             gameOver();
             return;
         } else {
-            initBall();
+            resetBall();
+            resetPaddle();
         }
     }
 
@@ -108,7 +108,7 @@ function animate() {
 
 function draw() {
     ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
-    ctx.drawImage(images.ball, ball.x, ball.y, 2*ball.radius, 2*ball.radius);
+    ctx.drawImage(images.ball, ball.x, ball.y, 2 * ball.radius, 2 * ball.radius);
     ctx.drawImage(images.paddle, paddle.x, paddle.y, paddle.width, paddle.height);
     drawBricks();
     drawScore();
@@ -136,7 +136,8 @@ function checkLevel() {
     if (brickField.every((b) => b.hitsLeft === 0)) {
         game.level++;
         // speed++; should we increase speed?
-        initBall();
+        resetBall();
+        resetPaddle();
         initBricks();
     }
 }
