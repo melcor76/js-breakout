@@ -12,8 +12,8 @@ let game = {
     rightPressed: false
 }
 let paddle = {
-    height: 23,
-    width: 114,
+    height: 20,
+    width: 100,
     x: canvas.width / 2,
     get y() { return canvas.height - this.height; }
 }
@@ -31,7 +31,6 @@ let images = {
     paddle: new Image(),
     background: new Image()
 }
-
 images.ball.src = 'ball.webp';
 images.paddle.src = 'paddle.webp';
 images.background.src = 'bg-space.webp';
@@ -108,16 +107,9 @@ function animate() {
 }
 
 function draw() {
-    // clear canvas and draw background
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(images.background, 0, 0, canvas.width, canvas.height);
-
-    // draw ball
     ctx.drawImage(images.ball, ball.x, ball.y, 2*ball.radius, 2*ball.radius);
-
-    // draw paddle
     ctx.drawImage(images.paddle, paddle.x, paddle.y, paddle.width, paddle.height);
-
     drawBricks();
     drawScore();
     drawLives();
@@ -178,27 +170,31 @@ function drawLives() {
 }
 
 function detectCollision() {
-    if (ball.x + ball.radius * 2 > canvas.width || ball.x < 0) {
+    if (hitLeftWall() || hitRightWall()) {
       ball.dx = -ball.dx;
-    }
-          
-    if (ball.y < 0) {
+    }          
+    if (hitTop() || hitPaddle()) {
       ball.dy = -ball.dy;
     }
-
-    // Paddle
-    if (ball.y + ball.radius * 2 > canvas.height - paddle.height && ball.y + ball.radius < canvas.height) {
-        if(ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
-            ball.dy = -ball.dy;
-
-            // Change x depending on where on the paddle the ball bounces.
-            // Bouncing ball more on one side drasw ball a little to that side.
-            const drawingConst = 5
-            const paddleMiddle = 2;
-            const algo = (((ball.x - paddle.x) / paddle.width) * drawingConst);
-            ball.dx = ball.dx + algo - paddleMiddle;
-        }
+    if (hitPaddle()) {
+        // TODO change this logic to angles with sin/cos
+        // Change x depending on where on the paddle the ball bounces.
+        // Bouncing ball more on one side drasw ball a little to that side.
+        const drawingConst = 5
+        const paddleMiddle = 2;
+        const algo = (((ball.x - paddle.x) / paddle.width) * drawingConst);
+        ball.dx = ball.dx + algo - paddleMiddle;
     }
+
+    function hitTop() { return ball.y < 0 }
+    function hitLeftWall() { return ball.x < 0 }
+    function hitRightWall() { return ball.x + ball.radius * 2 > canvas.width }
+    function hitPaddle() { 
+        return ball.y + ball.radius * 2 > canvas.height - paddle.height &&
+               ball.y + ball.radius < canvas.height && 
+               ball.x > paddle.x && ball.x < paddle.x + paddle.width;
+    }
+    // TODO paddle collision needs improvement
 }
 
 function detectBrickCollision() {
