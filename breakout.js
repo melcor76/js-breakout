@@ -68,14 +68,16 @@ function initBricks() {
     const topMargin = 30;
     const colors = ['red', 'orange', 'yellow', 'blue', 'green'];
 
-    for(let r = 0; r < brick.rows; r++) {
-        for(let c = 0; c < brick.cols; c++) {
+    for(let row = 0; row < brick.rows; row++) {
+        for(let col = 0; col < brick.cols; col++) {
             brickField.push({
-                x: c * brick.width,
-                y: r * brick.height + topMargin,
-                color: colors[r],
-                points: (5 - r) * 2,
-                hitsLeft: r === 0 ? 2 : 1
+                x: col * brick.width,
+                y: row * brick.height + topMargin,
+                height: brick.height,
+                width: brick.width,
+                color: colors[row],
+                points: (5 - row) * 2,
+                hitsLeft: row === 0 ? 2 : 1
             });
         }
     }
@@ -141,11 +143,11 @@ function checkLevel() {
 }
 
 function drawBricks() {
-    brickField.forEach((b) => {
-      if (b.hitsLeft) {
-        ctx.fillStyle = b.color;
-        ctx.fillRect(b.x, b.y, brick.width, brick.height);
-        ctx.strokeRect(b.x, b.y, brick.width, brick.height);
+    brickField.forEach((brick) => {
+      if (brick.hitsLeft) {
+        ctx.fillStyle = brick.color;
+        ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+        ctx.strokeRect(brick.x, brick.y, brick.width, brick.height);
       }
     });
   }
@@ -195,34 +197,38 @@ function detectCollision() {
 
 function detectBrickCollision() {
     let directionChanged = false;
-    brickField.forEach((b) => {
-        if (b.hitsLeft && 
-            ball.x + 2 * ball.radius > b.x && 
-            ball.x < b.x + brick.width && 
-            ball.y + 2 * ball.radius > b.y && 
-            ball.y < b.y + brick.height) {
-
-                b.hitsLeft--;
-                if (b.hitsLeft === 1) {
-                    b.color = 'darkgray';
-                }
-                game.score += b.points;
-
-                // console.log(`ball x: ${ball.x} y: ${ball.y}`)
-                // console.log(`bric x: ${b.x} y: ${b.y}`)
-
-                if (!directionChanged) {
-                    directionChanged = true;
-                    if (ball.x + 2* ball.radius - ball.dx <= b.x) { // Hit from left
-                        ball.dx = -ball.dx;
-                    } else if (ball.x - ball.dx >= b.x + brick.width) { // Hit from right
-                        ball.dx = -ball.dx;
-                    } else { // Hit from above or below
-                        ball.dy = -ball.dy;
-                    }
-                }
+  
+    brickField.forEach((brick) => {
+      if (brick.hitsLeft && isBallInsideBrick(brick)) {
+        brick.hitsLeft--;
+        if (brick.hitsLeft === 1) {
+          brick.color = 'darkgray';
         }
+        game.score += brick.points;
+  
+        if (!directionChanged) {
+          directionChanged = true;
+          detectCollisionDirection(brick);
+        }
+      }
     });
+  
+    function isBallInsideBrick(brick) {
+      return ball.x + 2 * ball.radius > brick.x && 
+          ball.x < brick.x + brick.width && 
+          ball.y + ball.radius * 2 > brick.y && 
+          ball.y < brick.y + brick.height
+    }
+}
+
+function detectCollisionDirection(brick) {
+    if (ball.x + 2* ball.radius - ball.dx <= brick.x) { // Hit from left
+      ball.dx = -ball.dx;
+    } else if (ball.x - ball.dx >= brick.x + brick.width) { // Hit from right
+      ball.dx = -ball.dx;
+    } else { // Hit from above or below
+      ball.dy = -ball.dy;
+    }
 }
 
 function keyDownHandler(e) {
