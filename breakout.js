@@ -157,6 +157,14 @@ function drawLives() {
 }
 
 function detectCollision() {
+    const hitTop = () => ball.y < 0;
+    const hitLeftWall = () => ball.x < 0;
+    const hitRightWall = () => ball.x + ball.radius * 2 > canvas.width;
+    const hitPaddle = () => ball.y + 2 * ball.radius > canvas.height - paddle.height &&
+        ball.y + ball.radius < canvas.height && 
+        ball.x + ball.radius > paddle.x &&
+        ball.x + ball.radius < paddle.x + paddle.width;
+
     if (hitLeftWall() || hitRightWall()) {
       ball.dx = -ball.dx;
     }          
@@ -173,16 +181,6 @@ function detectCollision() {
         const algo = (((ball.x - paddle.x) / paddle.width) * drawingConst);
         ball.dx = ball.dx + algo - paddleMiddle;
     }
-
-    function hitTop() { return ball.y < 0 }
-    function hitLeftWall() { return ball.x < 0 }
-    function hitRightWall() { return ball.x + ball.radius * 2 > canvas.width }
-    function hitPaddle() { 
-        const ballCenterX = ball.x + ball.radius;
-        return ball.y + 2 * ball.radius > canvas.height - paddle.height &&
-               ball.y + ball.radius < canvas.height && 
-               ballCenterX > paddle.x && ballCenterX < paddle.x + paddle.width;
-      }
 }
 
 function detectBrickCollision() {
@@ -190,6 +188,7 @@ function detectBrickCollision() {
   
     brickField.forEach((brick) => {
         if (brick.hitsLeft && isBallInsideBrick(brick)) {
+            sounds.brick.currentTime = 0;
             sounds.brick.play();
             brick.hitsLeft--;
             if (brick.hitsLeft === 1) {
@@ -240,6 +239,7 @@ function keyUpHandler(e) {
 
 function isLevelCompleted() {
     const levelComplete = brickField.every((b) => b.hitsLeft === 0);
+
     if (levelComplete) {
         initNextLevel();
         resetBall();
@@ -261,6 +261,8 @@ function initNextLevel() {
 }
 
 function isGameOver() {
+    const isBallLost = () => ball.y - ball.radius > canvas.height;
+
     if (isBallLost()) {
         game.lives -= 1;
         sounds.ballLost.play();
@@ -272,15 +274,10 @@ function isGameOver() {
         resetPaddle();
     }
     return false;
-
-    function isBallLost() {
-        return ball.y - ball.radius > canvas.height;
-    }
 }
 
 function gameOver() {
     sounds.gameOver.play();
-    cancelAnimationFrame(game.requestId);
     ctx.font = '40px Arial';
     ctx.fillStyle = 'red';
     ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2);
