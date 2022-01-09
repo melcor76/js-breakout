@@ -5,6 +5,7 @@ document.addEventListener('keyup', keyUpHandler);
 
 let game = {
     requestId: null,
+    timeoutId: null,
     leftKey: false,
     rightKey: false
 }
@@ -22,7 +23,6 @@ let brick = {
     get width() { return canvas.width / this.cols; },
     height: 30
 }
-
 let images = {
     background: new Image(),
     ball: new Image(),
@@ -32,28 +32,27 @@ images.background.src = './images/bg-space.webp';
 images.ball.src = './images/ball.webp';
 images.paddle.src = './images/paddle.webp';
 
-let sounds = {
-    breakout: new Audio(),
-    brick: new Audio(),
-    gameOver: new Audio(),
-    paddle: new Audio()
+const sounds = {
+    ballLost: new Audio('./sounds/ball-lost.mp3'),
+    breakout: new Audio('./sounds/breakout.mp3'),
+    brick: new Audio('./sounds/brick.mp3'),
+    gameOver: new Audio('./sounds/game-over.mp3'),
+    levelCompleted: new Audio('./sounds/level-completed.mp3'),
+    paddle: new Audio('./sounds/paddle.mp3')
 }
-sounds.breakout.src = './sounds/breakout.mp3';
-sounds.brick.src = './sounds/brick.mp3';
-sounds.gameOver.src = './sounds/game-over.mp3';
-sounds.paddle.src = './sounds/paddle.mp3';
 
 let brickField = [];
 
 function play() {   
+    cancelAnimationFrame(game.requestId);
+    clearTimeout(game.timeoutId);
+
     resetGame();
     resetBall();
     resetPaddle();
     initBricks();
+    sounds.breakout.play();
 
-    if (game.requestId) {
-        cancelAnimationFrame(game.requestId);
-    }
     animate();
 }
 
@@ -69,7 +68,6 @@ function resetBall() {
     ball.y = canvas.height - paddle.height - 2 * ball.radius;
     ball.dx = game.speed * (Math.random() * 2 - 1);  // Random trajectory
     ball.dy = -game.speed; // Up
-    sounds.breakout.play();
 }
 
 function resetPaddle() {
@@ -101,20 +99,8 @@ function animate() {
     update();
     detectCollision();
     detectBrickCollision();
-    checkLevel();
-
-    // Check for lost ball
-    // TODO: move to function, add game.over.
-    if (ball.y - ball.radius > canvas.height) {
-        game.lives -= 1;
-        if (game.lives === 0) {
-            gameOver();
-            return;
-        } else {
-            resetBall();
-            resetPaddle();
-        }
-    }
+    
+    if (isLevelCompleted() || isGameOver()) return;
 
     game.requestId = requestAnimationFrame(animate);
 }
@@ -146,16 +132,6 @@ function update() {
     }
 }
 
-function checkLevel() {
-    if (brickField.every((b) => b.hitsLeft === 0)) {
-        game.level++;
-        game.speed++;
-        resetBall();
-        resetPaddle();
-        initBricks();
-    }
-}
-
 function drawBricks() {
     brickField.forEach((brick) => {
       if (brick.hitsLeft) {
@@ -175,10 +151,9 @@ function drawScore() {
 }
 
 function drawLives() {
-    const { lives } = game;
-    if (lives > 2) { ctx.drawImage(images.paddle, canvas.width - 150, 10, 40, 15); }
-    if (lives > 1) { ctx.drawImage(images.paddle, canvas.width - 100, 10, 40, 15); }
-    if (lives > 0) { ctx.drawImage(images.paddle, canvas.width - 50, 10, 40, 15); }
+    if (game.lives > 2) { ctx.drawImage(images.paddle, canvas.width - 150, 9, 40, 13); }
+    if (game.lives > 1) { ctx.drawImage(images.paddle, canvas.width - 100, 9, 40, 13); }
+    if (game.lives > 0) { ctx.drawImage(images.paddle, canvas.width - 50, 9, 40, 13); }
 }
 
 function detectCollision() {
@@ -232,7 +207,7 @@ function detectBrickCollision() {
     function isBallInsideBrick(brick) {
       return ball.x + 2 * ball.radius > brick.x && 
           ball.x < brick.x + brick.width && 
-          ball.y + ball.radius * 2 > brick.y && 
+          ball.y + 2 * ball.radius > brick.y && 
           ball.y < brick.y + brick.height
     }
 }
@@ -260,6 +235,46 @@ function keyUpHandler(e) {
         game.rightKey = false;
     } else if (e.key === 'ArrowLeft') {
         game.leftKey = false;
+    }
+}
+
+function isLevelCompleted() {
+    const levelComplete = brickField.every((b) => b.hitsLeft === 0);
+    if (levelComplete) {
+        initNextLevel();
+        resetBall();
+        resetPaddle();
+        initBricks();
+        game.timeoutId = setTimeout(() => animate(), 3000);
+        return true;
+    }
+    return false;
+}
+
+function initNextLevel() {
+    game.level++;
+    game.speed++;
+    sounds.levelCompleted.play();
+    ctx.font = '40px Arial';
+    ctx.fillStyle = 'yellow';
+    ctx.fillText(`LEVEL ${game.level}!`, canvas.width / 2 - 80, canvas.height / 2);
+}
+
+function isGameOver() {
+    if (isBallLost()) {
+        game.lives -= 1;
+        sounds.ballLost.play();
+        if (game.lives === 0) {
+            gameOver();
+            return true;
+        }
+        resetBall();
+        resetPaddle();
+    }
+    return false;
+
+    function isBallLost() {
+        return ball.y - ball.radius > canvas.height;
     }
 }
 
