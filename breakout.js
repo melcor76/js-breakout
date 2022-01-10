@@ -160,7 +160,8 @@ function detectCollision() {
     const hitTop = () => ball.y < 0;
     const hitLeftWall = () => ball.x < 0;
     const hitRightWall = () => ball.x + ball.radius * 2 > canvas.width;
-    const hitPaddle = () => ball.y + 2 * ball.radius > canvas.height - paddle.height &&
+    const hitPaddle = () => 
+        ball.y + 2 * ball.radius > canvas.height - paddle.height &&
         ball.y + ball.radius < canvas.height && 
         ball.x + ball.radius > paddle.x &&
         ball.x + ball.radius < paddle.x + paddle.width;
@@ -185,6 +186,11 @@ function detectCollision() {
 
 function detectBrickCollision() {
     let directionChanged = false;
+    const isBallInsideBrick = (brick) => 
+        ball.x + 2 * ball.radius > brick.x &&
+        ball.x < brick.x + brick.width && 
+        ball.y + 2 * ball.radius > brick.y && 
+        ball.y < brick.y + brick.height;
   
     brickField.forEach((brick) => {
         if (brick.hitsLeft && isBallInsideBrick(brick)) {
@@ -202,19 +208,13 @@ function detectBrickCollision() {
             }
         }
     });
-  
-    function isBallInsideBrick(brick) {
-      return ball.x + 2 * ball.radius > brick.x && 
-          ball.x < brick.x + brick.width && 
-          ball.y + 2 * ball.radius > brick.y && 
-          ball.y < brick.y + brick.height
-    }
 }
 
 function detectCollisionDirection(brick) {
-    if (ball.x + 2 * ball.radius - ball.dx <= brick.x) { // Hit from left
-      ball.dx = -ball.dx;
-    } else if (ball.x - ball.dx >= brick.x + brick.width) { // Hit from right
+    const hitFromLeft = () => ball.x + 2 * ball.radius - ball.dx <= brick.x;
+    const hitFromRight = () => ball.x - ball.dx >= brick.x + brick.width;
+
+    if (hitFromLeft() || hitFromRight()) {
       ball.dx = -ball.dx;
     } else { // Hit from above or below
       ball.dy = -ball.dy;
@@ -246,6 +246,7 @@ function isLevelCompleted() {
         resetPaddle();
         initBricks();
         game.timeoutId = setTimeout(() => animate(), 3000);
+
         return true;
     }
     return false;
