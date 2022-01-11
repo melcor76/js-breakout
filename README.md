@@ -8,7 +8,7 @@ JavaScript Breakout Game.
 
 - Check out my [Tetris game](https://github.com/melcor76/js-tetris).
 
-![breakout picture](assets/breakout-title.png)
+![breakout picture](assets/share-image-large.png)
 
 ## Resources
 
