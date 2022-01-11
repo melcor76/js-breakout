@@ -28,6 +28,16 @@ let images = {
     ball: new Image(),
     paddle: new Image()
 }
+function onImageLoad(e) {
+    resetGame();
+    initBricks();
+    resetPaddle();
+    paint();
+    ctx.font = '50px ArcadeClassic';
+    ctx.fillStyle = 'lime';
+    ctx.fillText('PRESS START', canvas.width / 2 - 120, canvas.height / 2);
+};
+images.background.addEventListener('load', onImageLoad);
 images.background.src = './images/bg-space.webp';
 images.ball.src = './images/ball.webp';
 images.paddle.src = './images/paddle.webp';
@@ -283,3 +293,4 @@ function gameOver() {
     ctx.fillStyle = 'red';
     ctx.fillText('GAME OVER', canvas.width / 2 - 100, canvas.height / 2);
 }
+
