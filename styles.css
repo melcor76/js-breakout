@@ -1,3 +1,12 @@
+@font-face {
+  font-family: 'ArcadeClassic';
+  src: url('./assets/arcade-classic.ttf');
+}
+
+* {
+  font-family: 'ArcadeClassic', cursive;
+}
+
 #breakout {
   background-color: black;
 }
