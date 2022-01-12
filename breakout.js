@@ -187,20 +187,28 @@ function drawLives() {
 function detectCollision() {
     const hitTop = () => ball.y < 0;
     const hitLeftWall = () => ball.x < 0;
-    const hitRightWall = () => ball.x + ball.radius * 2 >= canvas.width;
+    const hitRightWall = () => ball.x + ball.radius * 2 > canvas.width;
     const hitPaddle = () => 
         ball.y + 2 * ball.radius > canvas.height - paddle.height &&
         ball.y + ball.radius < canvas.height && 
         ball.x + ball.radius > paddle.x &&
         ball.x + ball.radius < paddle.x + paddle.width;
 
-    if (hitLeftWall() || hitRightWall()) {
-      ball.dx = -ball.dx;
-    }          
-    if (hitTop() || hitPaddle()) {
-      ball.dy = -ball.dy;
+    if (hitLeftWall()) {
+        ball.dx = -ball.dx;
+        ball.x = 0;
+    }        
+    if (hitRightWall()) {
+        ball.dx = -ball.dx;
+        ball.x = canvas.width - 2 * ball.radius;
+    }
+    if (hitTop()) {
+        ball.dy = -ball.dy;
+        ball.y = 0;
     }
     if (hitPaddle()) {
+        ball.dy = -ball.dy;
+        ball.y = canvas.height - paddle.height - 2 * ball.radius;
         sounds.paddle.play();
         // TODO change this logic to angles with sin/cos
         // Change x depending on where on the paddle the ball bounces.
