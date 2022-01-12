@@ -67,7 +67,7 @@ function play() {
 }
 
 function resetGame() {
-    game.speed = 8;
+    game.speed = 6;
     game.score = 0;
     game.level = 1;
     game.lives = 3;
