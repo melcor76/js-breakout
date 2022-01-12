@@ -2,6 +2,7 @@ const canvas = document.getElementById('breakout');
 const ctx = canvas.getContext('2d');
 document.addEventListener('keydown', keyDownHandler);
 document.addEventListener('keyup', keyUpHandler);
+document.addEventListener("mousemove", mouseMoveHandler)
 
 let game = {    
     requestId: null,
@@ -262,6 +263,15 @@ function keyUpHandler(e) {
         game.rightKey = false;
     } else if (e.key === 'ArrowLeft') {
         game.leftKey = false;
+    }
+}
+
+function mouseMoveHandler(e) {
+    const mouseX = e.clientX - canvas.offsetLeft;    
+    const isInsideCourt = () => mouseX > 0 && mouseX < canvas.width;
+
+    if(isInsideCourt()) {
+        paddle.x = mouseX - paddle.width / 2;
     }
 }
 

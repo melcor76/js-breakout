@@ -9,6 +9,7 @@
 
 #breakout {
   background-color: black;
+  cursor: none;
 }
 
 #play-button {
