@@ -19,7 +19,7 @@ let ball = {
     radius: 10
 };
 let brick = {
-    rows: 5,
+    rows: 2,
     cols: 10,
     get width() { return canvas.width / this.cols; },
     height: 30
@@ -49,8 +49,10 @@ const sounds = {
     brick: new Audio('./sounds/brick.mp3'),
     gameOver: new Audio('./sounds/game-over.mp3'),
     levelCompleted: new Audio('./sounds/level-completed.mp3'),
+    music: new Audio('./sounds/music.mp3'),
     paddle: new Audio('./sounds/paddle.mp3')
 }
+sounds.music.loop = true;
 
 let brickField = [];
 
@@ -62,7 +64,10 @@ function play() {
     resetBall();
     resetPaddle();
     initBricks();
+
     sounds.breakout.play();
+    // Start music after starting sound ends.
+    setTimeout(() => sounds.music.play(), 2000);
 
     animate();
 }
@@ -262,7 +267,10 @@ function isLevelCompleted() {
         resetBall();
         resetPaddle();
         initBricks();
-        game.timeoutId = setTimeout(() => animate(), 3000);
+        game.timeoutId = setTimeout(() => {
+            animate();
+            sounds.music.play();
+        }, 3000);
 
         return true;
     }
@@ -272,6 +280,7 @@ function isLevelCompleted() {
 function initNextLevel() {
     game.level++;
     game.speed++;
+    sounds.music.pause();
     sounds.levelCompleted.play();
     ctx.font = '50px ArcadeClassic';
     ctx.fillStyle = 'yellow';
@@ -295,6 +304,8 @@ function isGameOver() {
 }
 
 function gameOver() {
+    sounds.music.pause();
+    sounds.currentTime = 0;
     sounds.gameOver.play();
     ctx.font = '50px ArcadeClassic';
     ctx.fillStyle = 'red';
