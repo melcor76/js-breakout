@@ -187,7 +187,7 @@ function drawLives() {
 function detectCollision() {
     const hitTop = () => ball.y < 0;
     const hitLeftWall = () => ball.x < 0;
-    const hitRightWall = () => ball.x + ball.radius * 2 > canvas.width;
+    const hitRightWall = () => ball.x + ball.radius * 2 >= canvas.width;
     const hitPaddle = () => 
         ball.y + 2 * ball.radius > canvas.height - paddle.height &&
         ball.y + ball.radius < canvas.height && 
